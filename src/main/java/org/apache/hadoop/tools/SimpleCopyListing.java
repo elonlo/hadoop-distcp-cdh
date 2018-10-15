@@ -578,6 +578,7 @@ public class SimpleCopyListing extends CopyListing {
       } catch (FileNotFoundException fnf) {
         LOG.error("FileNotFoundException exception in listStatus: " +
                   fnf.getMessage());
+        fnf.printStackTrace();
         result = new WorkReport<FileStatus[]>(new FileStatus[0], retry, true,
                                               fnf);
       } catch (Exception e) {
@@ -660,7 +661,13 @@ public class SimpleCopyListing extends CopyListing {
               if (LOG.isDebugEnabled()) {
                 LOG.debug("Traversing into source dir: " + child.getPath());
               }
-              workers.put(new WorkRequest<FileStatus>(child, retry));
+              if (shouldCopy(child.getPath())) {
+                workers.put(new WorkRequest<FileStatus>(child, retry));
+              } else {
+                if (LOG.isDebugEnabled()) {
+                  LOG.debug("Ignore source dir: " + child.getPath());
+                }
+              }
             }
           } else {
             LOG.error("Giving up on " + child.getPath() +
